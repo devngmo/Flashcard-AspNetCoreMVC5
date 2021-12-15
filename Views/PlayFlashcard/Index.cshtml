@@ -1,0 +1,111 @@
+﻿@*
+For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = "../Shared/_LayoutPlay.cshtml";
+}
+
+<style>
+    html, body, #app {
+        height: 100%;
+        font-size: 20pt;
+    }
+
+    #app, .card-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .face {
+        flex: 1;
+        margin: 20px;
+        border-radius:20px;
+        border: 1px solid #aaa;
+        padding: 20px;
+
+        display: flex;
+        flex-direction: column;
+
+    }
+    .face .content {
+        text-align: center;
+        font-size: 40pt;
+        margin: auto;
+    }
+
+    .actions {
+        text-align: center;
+        
+    }
+</style>
+
+<div id="app" class="card card-widget">
+    <div class="card-header">
+        <div style="float:left">
+            Card: 1/10
+        </div>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+        <div class="face" v-on:click="flip">
+            <div class="content">
+                {{face_content}}
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-success" v-on:click="mark('mastered')">Mastered</button>
+            <button type="button" class="btn btn-warning" v-on:click="mark('remind')">Remind me later</button>
+            <button type="button" class="btn btn-danger" v-on:click="mark('not_remember')">Don't Remember</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const BASE_URL = '@ViewBag.BASE_URL';
+    const api = {
+        mark: function(id, m) {
+            let url = BASE_URL + '/mark';
+            return axios.post(url, { id: id, mark: m});
+        }
+    };
+    let app = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                face: 0,
+                card: {
+                    id: 'test',
+                    front: {
+                        content: 'Book'
+                    },
+                    back: {
+                        content: 'sach'
+                    }
+                }
+            };
+        },
+        computed: {
+            face_content: function() {
+                if (this.face === 0) return this.card.front.content;
+                return this.card.back.content;
+            }
+        },
+        methods: {
+            flip: function() {
+                if(this.face === 1) this.face = 0;
+                else this.face = 1;
+            },
+            mark: function(m) {
+                api.mark(this.card.id, m)
+                .then(resp => {
+                    app.card = resp.data.next;
+                });
+            }
+        }
+
+    });
+</script>
+
+
